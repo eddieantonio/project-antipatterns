@@ -34,12 +34,15 @@ def main():
     Collect the first few messages from Blackbox mini.
     """
 
-    slices = list(blackbox_mini.slices())
+    slices = blackbox_mini.slices()
+    list(map(process_entire_slice, slices))
 
-    slice_root = slices[0]
+
+def process_entire_slice(slice_root: Path):
     date = slice_root.name[len("srcml-"):]
     assert len(date) > 0
 
+    logger.debug("Starting slice %s (%s)", date, slice_root)
     collect_errors_from_slice(
         slice_root=slice_root,
         database_path=f"errors-{date}.sqlite3"
@@ -156,5 +159,5 @@ def convert_to_int_if_not_none(x):
 
 
 if __name__ == '__main__':
-    logging.basicConfig()
+    logging.basicConfig(level=logging.DEBUG)
     main()
