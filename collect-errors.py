@@ -12,7 +12,35 @@ from decode_escapes import decode_escapes
 
 DATASET_ROOT = Path("/data/mini/srcml-2013-06")
 
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS messages(
+    srcml_path TEXT,
+    version INT,
+    rank INT,
+    start TEXT,
+    end TEXT,
+    text TEXT
+);
+"""
+
 logger = logging.getLogger(__name__)
+
+
+def main():
+    from itertools import islice
+    conn = sqlite3.connect("errors.sqlite3")
+    try:
+        init_db(conn)
+        with conn:
+            conn.executemany(
+                """
+                INSERT INTO messages (srcml_path, version, rank, start, end, text)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                islice(generate_all_compiler_errors(), 100)
+            )
+    finally:
+        conn.close()
 
 
 def generate_all_compiler_errors():
@@ -45,6 +73,11 @@ def find_compiler_errors_in_file(srcml_path: Path):
                 )
 
 
+def init_db(conn):
+    with conn:
+        conn.executescript(SCHEMA)
+
+
 def convert_to_int_if_not_none(x):
     if x is not None:
         return int(x)
@@ -52,26 +85,5 @@ def convert_to_int_if_not_none(x):
 
 
 if __name__ == '__main__':
-    from itertools import islice
     logging.basicConfig()
-
-    conn = sqlite3.connect("errors.sqlite3")
-    conn.executescript("""
-    CREATE TABLE IF NOT EXISTS messages(
-        srcml_path TEXT,
-        version INT,
-        rank INT,
-        start TEXT,
-        end TEXT,
-        text TEXT
-    );
-    """)
-    conn.executemany(
-        """
-        INSERT INTO messages (srcml_path, version, rank, start, end, text)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        generate_all_compiler_errors()
-    )
-    conn.commit()
-    conn.close()
+    main()
