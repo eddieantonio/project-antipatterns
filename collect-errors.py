@@ -10,21 +10,12 @@ from pathlib import Path
 
 import blackbox_mini
 from decode_escapes import decode_escapes
+from database import SCHEMA
 
 
 DATASET_ROOT = Path("/data/mini/")
 
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS messages(
-    srcml_path TEXT,
-    version INT,
-    rank INT,
-    start TEXT,
-    end TEXT,
-    text TEXT
-);
-"""
 
 logger = logging.getLogger(__name__)
 
