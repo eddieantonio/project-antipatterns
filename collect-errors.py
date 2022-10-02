@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 """
-Collect raw error messages from Blackbox Mini and insert them into databases.
+Collect raw error messages from Blackbox Mini and insert them into several
+databases. Use combine-databases.py later to combine them all into one.
 """
 
 import sqlite3
@@ -14,8 +17,6 @@ from database import SCHEMA
 
 
 DATASET_ROOT = Path("/data/mini/")
-
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,18 +57,17 @@ def process_entire_slice(slice_root: Path):
 def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
     """
     Collect all the error messages from one slice of Blackbox Mini, and stuff
-    them in the give database name.
+    them into the given database name.
 
     Messages are committed in batches. Each batch is one project from within
     the slice.
     """
-    from itertools import islice
-
     assert slice_root.match("srcml-*")
+
     conn = sqlite3.connect(database_path)
     try:
         init_db(conn)
-        for project in islice(generate_all_project_paths(slice_root), 10):
+        for project in generate_all_project_paths(slice_root):
             insert_batch(conn, generate_compiler_errors_for_project(project))
     finally:
         conn.close()
@@ -163,5 +163,5 @@ def convert_to_int_if_not_none(x):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(filename='data-collection.log', encoding='utf-8', level=logging.DEBUG))
     main()
