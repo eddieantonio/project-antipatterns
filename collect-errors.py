@@ -1,11 +1,11 @@
 """
-Collect raw error messages from Blackbox Mini and insert them into the
-database.
+Collect raw error messages from Blackbox Mini and insert them into databases.
 """
 
 import sqlite3
 import logging
 import xml.etree.ElementTree as ET
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import blackbox_mini
@@ -31,14 +31,27 @@ logger = logging.getLogger(__name__)
 
 def main():
     """
-    Collect the first few messages from Blackbox mini.
+    Collect all error messages from Blackbox mini.
+    Will create SEVERAL .sqlite3 database called:
+
+        errors-{slice-date}.sqlite3
+
+    Each slice will be computed in a separate process. I have hard-coded the
+    number of processors on the machine I want to run this on.
     """
 
     slices = blackbox_mini.slices()
-    list(map(process_entire_slice, slices))
+
+    # I looked at htop on white and found this many processors:
+    n_processors = 24
+    executor = ProcessPoolExecutor(max_workers=n_processors // 2)
+    executor.map(process_entire_slice, slices)
 
 
 def process_entire_slice(slice_root: Path):
+    """
+    Given a slice path, will commit all error messages found to a database.
+    """
     date = slice_root.name[len("srcml-"):]
     assert len(date) > 0
 
