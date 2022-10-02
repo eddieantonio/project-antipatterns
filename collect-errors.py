@@ -49,15 +49,20 @@ def generate_all_compiler_errors():
     slices = DATASET_ROOT.glob("srcml-*")
     for slice_root in slices:
         for project in generate_all_project_paths(slice_root):
-            srcmls = project.glob("src-*.xml")
-            for srcml_path in srcmls:
-                yield from find_compiler_errors_in_file(srcml_path)
+            yield from generate_compiler_errors_for_project(project)
+
+
+def generate_compiler_errors_for_project(project_path: Path):
+    assert project_path.match("project-*")
+    for srcml_path in project_path.glob("src-*.xml"):
+        yield from find_compiler_errors_in_file(srcml_path)
 
 
 def generate_all_project_paths(slice_root: Path):
     """
     Given a path to the root of a slice, yields every project directory
     """
+    assert slice_root.match("srcml-*")
     for entry in slice_root.glob("project-*"):
         if not entry.is_dir():
             continue
