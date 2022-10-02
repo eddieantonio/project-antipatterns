@@ -11,7 +11,8 @@ from pathlib import Path
 from decode_escapes import decode_escapes
 
 
-DATASET_ROOT = Path("/data/mini/srcml-2013-06")
+DATASET_ROOT = Path("/data/mini/")
+
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS messages(
@@ -45,9 +46,22 @@ def generate_all_compiler_errors():
     Yields every compiler error found within srcML files within in DATASET_ROOT
     (including subdirectories).
     """
-    srcmls = DATASET_ROOT.glob("**/src-*.xml")
-    for srcml_path in srcmls:
-        yield from find_compiler_errors_in_file(srcml_path)
+    slices = DATASET_ROOT.glob("srcml-*")
+    for slice_root in slices:
+        for project in generate_all_project_paths(slice_root):
+            srcmls = project.glob("src-*.xml")
+            for srcml_path in srcmls:
+                yield from find_compiler_errors_in_file(srcml_path)
+
+
+def generate_all_project_paths(slice_root: Path):
+    """
+    Given a path to the root of a slice, yields every project directory
+    """
+    for entry in slice_root.glob("project-*"):
+        if not entry.is_dir():
+            continue
+        yield entry
 
 
 def find_compiler_errors_in_file(srcml_path: Path):
