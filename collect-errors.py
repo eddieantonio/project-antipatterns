@@ -8,6 +8,7 @@ import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import blackbox_mini
 from decode_escapes import decode_escapes
 
 
@@ -32,9 +33,13 @@ def main():
     """
     Collect the first few messages from Blackbox mini.
     """
-    slice_root = next(iter(DATASET_ROOT.glob("srcml-*")))
+
+    slices = list(blackbox_mini.slices())
+
+    slice_root = slices[0]
     date = slice_root.name[len("srcml-"):]
     assert len(date) > 0
+
     collect_errors_from_slice(
         slice_root=slice_root,
         database_path=f"errors-{date}.sqlite3"
