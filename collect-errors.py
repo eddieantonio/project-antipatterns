@@ -31,14 +31,7 @@ def main():
     conn = sqlite3.connect("errors.sqlite3")
     try:
         init_db(conn)
-        with conn:
-            conn.executemany(
-                """
-                INSERT INTO messages (srcml_path, version, rank, start, end, text)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                islice(generate_all_compiler_errors(), 100)
-            )
+        insert_batch(conn, islice(generate_all_compiler_errors(), 100))
     finally:
         conn.close()
 
@@ -77,6 +70,16 @@ def init_db(conn):
     with conn:
         conn.executescript(SCHEMA)
 
+
+def insert_batch(conn, messages):
+    with conn:
+        conn.executemany(
+            """
+            INSERT INTO messages (srcml_path, version, rank, start, end, text)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            messages
+        )
 
 def convert_to_int_if_not_none(x):
     if x is not None:
