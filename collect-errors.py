@@ -36,7 +36,9 @@ def main():
     conn = sqlite3.connect("errors.sqlite3")
     try:
         init_db(conn)
-        insert_batch(conn, islice(generate_all_compiler_errors(), 100))
+        slice_root = next(iter(DATASET_ROOT.glob("srcml-*")))
+        for project in islice(generate_all_project_paths(slice_root), 100):
+            insert_batch(conn, generate_compiler_errors_for_project(project))
     finally:
         conn.close()
 
