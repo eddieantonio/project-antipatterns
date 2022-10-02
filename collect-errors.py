@@ -30,14 +30,32 @@ logger = logging.getLogger(__name__)
 
 def main():
     """
-    Collect the first 100 messages from Blackbox mini.
+    Collect the first few messages from Blackbox mini.
+    """
+    slice_root = next(iter(DATASET_ROOT.glob("srcml-*")))
+    date = slice_root.name[len("srcml-"):]
+    assert len(date) > 0
+    collect_errors_from_slice(
+        slice_root=slice_root,
+        database_path=f"errors-{date}.sqlite3"
+    )
+
+
+def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
+    """
+    Collect all the error messages from one slice of Blackbox Mini, and stuff
+    them in the give database name.
+
+    Messages are committed in batches. Each batch is one project from within
+    the slice.
     """
     from itertools import islice
-    conn = sqlite3.connect("errors.sqlite3")
+
+    assert slice_root.match("srcml-*")
+    conn = sqlite3.connect(database_path)
     try:
         init_db(conn)
-        slice_root = next(iter(DATASET_ROOT.glob("srcml-*")))
-        for project in islice(generate_all_project_paths(slice_root), 100):
+        for project in islice(generate_all_project_paths(slice_root), 10):
             insert_batch(conn, generate_compiler_errors_for_project(project))
     finally:
         conn.close()
