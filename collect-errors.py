@@ -1,5 +1,6 @@
 """
-Collect raw error messages from Blackbox mini.
+Collect raw error messages from Blackbox Mini and insert them into the
+database.
 """
 
 import sqlite3
@@ -27,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    """
+    Collect the first 100 messages from Blackbox mini.
+    """
     from itertools import islice
     conn = sqlite3.connect("errors.sqlite3")
     try:
@@ -37,16 +41,26 @@ def main():
 
 
 def generate_all_compiler_errors():
+    """
+    Yields every compiler error found within srcML files within in DATASET_ROOT
+    (including subdirectories).
+    """
     srcmls = DATASET_ROOT.glob("**/src-*.xml")
     for srcml_path in srcmls:
         yield from find_compiler_errors_in_file(srcml_path)
 
 
 def find_compiler_errors_in_file(srcml_path: Path):
+    """
+    Given one srcML file, yields all compiler errors found within.
+
+    If the file cannot be parsed, nothing is yielded and the exception is
+    logged.
+    """
     try:
         root = ET.parse(srcml_path).getroot()
-    except ET.ParseError as e:
-        logger.exception("While parsing %s", srcml_path)
+    except ET.ParseError:
+        logger.exception("Could not parse %s", srcml_path)
         return
 
     failed_compilations = root.findall('.//unit[@compile-success="false"]')
@@ -67,11 +81,17 @@ def find_compiler_errors_in_file(srcml_path: Path):
 
 
 def init_db(conn):
+    """
+    Initialize the database with the schema.
+    """
     with conn:
         conn.executescript(SCHEMA)
 
 
 def insert_batch(conn, messages):
+    """
+    Insert one batch of messages into the database.
+    """
     with conn:
         conn.executemany(
             """
@@ -81,7 +101,11 @@ def insert_batch(conn, messages):
             messages
         )
 
+
 def convert_to_int_if_not_none(x):
+    """
+    Utility to convert item to int if and only if the item is not None.
+    """
     if x is not None:
         return int(x)
     return None
