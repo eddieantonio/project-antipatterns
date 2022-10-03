@@ -1,28 +1,54 @@
-from __future__ import annotations
+"""
+A number of patterns for matching English error messages from javac.
 
+Run "tests" with:
+
+    python3 -m java_error_messages.message_patterns
 """
-Match error message templates.
-"""
+
+from __future__ import annotations
 
 import csv
 import re
 from collections import Counter
 from dataclasses import dataclass
 
-from simple_error_messages import SIMPLE_ERROR_MESSAGES
+from .simple_error_messages import SIMPLE_ERROR_MESSAGES
 
 
 @dataclass(frozen=True)
 class MessagePattern:
+    """
+    Specifies a pattern for matching a javac error message.
+    """
+
+    # Corresponds to the key in compiler.properties.
+    # Some patterns have [variety] in square brackets in case the message template is a
+    # little TOO generic.
     message_id: str
+    # A regular expression matching the pattern. Note that all regular expressions match
+    # from the first character of the message, but might not match the entire message.
+    # This is because some messages end with a {message segment} which means that
+    # technically anything can be appended to some messages.
     pattern: re.Pattern
+    # A "santitized" (see [Pritchard 2015]) version of the error message.
+    # The signature should be a valid error message, and it must be matched by the
+    # pattern. For placeholders (e.g., variable names, class names, methods, etc.),
+    # signatures should follow a common theme.
     signature: str
 
     def match(self, message: str) -> bool:
+        """
+        Returns true if the given error message matches this pattern.
+        """
         return bool(self.pattern.match(message))
 
     @staticmethod
     def match_all(message: str) -> MessagePattern | None:
+        """
+        Try to match the given message against all patterns. The matching pattern is
+        returned. If no pattern matches, None is returned instead.
+        """
         for pattern in PATTERNS:
             if pattern.match(message):
                 return pattern
