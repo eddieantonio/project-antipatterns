@@ -169,17 +169,17 @@ PATTERNS = [
     # multiple signatures to match existing literature.
     MessagePattern(
         message_id="compiler.err.cant.resolve[class]",
-        pattern=re.compile(r"cannot find symbol -   class (?P<class_name>\S+)"),
+        pattern=re.compile(r"cannot find symbol -\s+class (?P<class_name>\S+)"),
         signature="cannot find symbol -   class Dcuk",
     ),
     MessagePattern(
         message_id="compiler.err.cant.resolve[method]",
-        pattern=re.compile(r"cannot find symbol -   method (?P<method_signature>\S+)"),
+        pattern=re.compile(r"cannot find symbol -\s+method (?P<method_signature>\S+)"),
         signature="cannot find symbol -   method quackk(java.io.PrintStream)",
     ),
     MessagePattern(
         message_id="compiler.err.cant.resolve[variable]",
-        pattern=re.compile(r"cannot find symbol -   variable (?P<variable_name>\S+)"),
+        pattern=re.compile(r"cannot find symbol -\s+variable (?P<variable_name>\S+)"),
         signature="cannot find symbol -   variable scroogeMcduck",
     ),
     MessagePattern(
