@@ -1,6 +1,9 @@
 """
 Catalog of 'simple' error messages -- messages that do NOT have placeholders, and thus,
 are presented verbatim to users.
+
+These messages were mined from:
+https://github.com/openjdk/jdk/blob/0f2113cee79b9645105b4753c7d7eacb83b872c2/src/jdk.compiler/share/classes/com/sun/tools/javac/resources/compiler.properties
 """
 
 SIMPLE_ERROR_MESSAGES = {
