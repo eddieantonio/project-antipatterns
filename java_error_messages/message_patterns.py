@@ -4,6 +4,25 @@ A number of patterns for matching English error messages from javac.
 Run "tests" with:
 
     python3 -m java_error_messages.message_patterns
+
+---
+
+On message signatures and "sanitized" messages. According to [Pritchard 2015]:
+
+> It is necessary to “sanitize” the data by removing parts that pertained to specifics
+> of user code rather than the kind of error. For instance,
+> `NameError: name ’x’ is not defined`  should be understood by our system to be
+> essentially the same error as
+> `NameError: name ’sum’ is not defined` so that the same explanation will appear in
+> either case.
+
+Additionally:
+
+> ... to fix a single objective goal for sanitization, we imagined that each
+> category should uniquely correspond to a single line of source code of the
+> compiler/runtime where the error is first detected.
+
+[Pritchard 2015]: D. Pritchard. Frequency Distribution of Error Messages. 2015.
 """
 
 from __future__ import annotations
@@ -66,6 +85,8 @@ class MessagePattern:
 
 
 # Big list of error message regular expressions 🙃
+#
+#
 #
 # The theme for signatures are: if it's about user-defined classes, methods, interfaces,
 # etc. then it's about ducks. This is inspired by the description of the Strategy
