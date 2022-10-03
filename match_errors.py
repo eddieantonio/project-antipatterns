@@ -30,6 +30,36 @@ class MessagePattern:
 
 
 # Big list of error message regular expressions 🙃
+#
+# The theme for signatures are: if it's about user-defined classes, methods, interfaces,
+# etc. then it's about ducks. This is inspired by the description of the Strategy
+# pattern in Head First: Design Patterns:
+#
+#     // ducks/Duck.java
+#     package ducks;
+#     import java.io.PrintStream;
+#     public abstract class Duck {
+#       public abstract void quack(PrintStream out);
+#     }
+#
+#     // ducks/Mallard.java
+#     package ducks;
+#     import java.io.PrintStream;
+#     public class Mallard extends Duck {
+#       private final int NUMBER_OF_QUACKS = 3;
+#       @Override
+#       public void quack(PrintStream out) {
+#          // ...
+#       }
+#     }
+#
+#     // Pond.java
+#     class Pond {
+#       public static void main(String[] args) {
+#         Duck scroogeMcDuck = new Mallard(); // no idea if he's a mallard or not
+#         scroogeMcDuck.quack(System.out);
+#       }
+#     }
 PATTERNS = [
     MessagePattern(
         message_id="compiler.err.does.not.override.abstract",
@@ -38,7 +68,7 @@ PATTERNS = [
             r" is not abstract and does not override abstract method "
             r"(?P<method_name>\S+) in (?P<parent_class_name>\S+)$"
         ),
-        signature="Mallard is not abstract and does not override abstract method quack(java.io.OutputStream) in Duck",
+        signature="Mallard is not abstract and does not override abstract method quack(java.io.PrintStream) in Duck",
     ),
     MessagePattern(
         message_id="compiler.err.array.req.but.found",
@@ -88,7 +118,7 @@ PATTERNS = [
     MessagePattern(
         message_id="compiler.err.cant.resolve[method]",
         pattern=re.compile(r"cannot find symbol -   method (?P<method_signature>\S+)"),
-        signature="cannot find symbol -   method quackk(java.io.OutputStream)",
+        signature="cannot find symbol -   method quackk(java.io.PrintStream)",
     ),
     MessagePattern(
         message_id="compiler.err.cant.resolve[variable]",
@@ -160,7 +190,7 @@ PATTERNS = [
             " is already defined in "
             "(?P<kind2>\S+) (?P<type_name>\S+)"
         ),
-        signature="method quack(java.io.OutputStream) is already defined in class Mallard",
+        signature="method quack(java.io.PrintStream) is already defined in class Mallard",
     ),
     MessagePattern(
         message_id="compiler.err.already.defined[variable]",
@@ -169,7 +199,7 @@ PATTERNS = [
             " is already defined in "
             "(?P<kind2>\S+) (?P<symbol>\S+)"
         ),
-        signature="variable i is already defined in method quack(java.io.OutputStream)",
+        signature="variable i is already defined in method quack(java.io.PrintStream)",
     ),
     MessagePattern(
         message_id="compiler.err.anonymous.diamond.method.does.not.override.superclass",
@@ -187,7 +217,7 @@ PATTERNS = [
     MessagePattern(
         message_id="compiler.err.cant.apply.symbols",
         pattern=re.compile(r"no suitable (?P<symbol_kind>\S+) found for (?P<name>\S+)"),
-        signature="no suitable constructor found for FileOutputStream()",
+        signature="no suitable constructor found for Duck()",
     ),
     # TODO: overly generic with symbol kind?
     MessagePattern(
@@ -195,7 +225,7 @@ PATTERNS = [
         pattern=re.compile(
             r"non-static (?P<symbol_kind>\S+) (?P<symbol>\S+) cannot be referenced from a static context"
         ),
-        signature="non-static method quack() cannot be referenced from a static context",
+        signature="non-static method quack(java.io.PrintStream) cannot be referenced from a static context",
     ),
     MessagePattern(
         message_id="compiler.err.doesnt.exist",
