@@ -1,0 +1,7 @@
+# Files in this folder
+grouped-errors.csv
+# Databases
+*.sqlite3
+
+# Python stuff
+*.py[co]
