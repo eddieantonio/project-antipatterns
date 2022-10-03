@@ -9,6 +9,8 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
+from simple_error_messages import SIMPLE_ERROR_MESSAGES
+
 
 @dataclass(frozen=True)
 class MessagePattern:
@@ -128,28 +130,131 @@ PATTERNS = [
         pattern=re.compile(r"duplicate class: (?P<name>\S+)$"),
         signature="duplicate class: Duck",
     ),
-    # TODO: one for compiler.err.class.cant.write?
+    MessagePattern(
+        message_id="compiler.err.class.cant.write",
+        pattern=re.compile(r"error while writing (?P<symbol>\S+:)"),
+        signature="error while writing Duck: C:\Program Files (x86)\BlueJ\examples\duck\Duck.class (Access is denied)",
+    ),
     MessagePattern(
         message_id="compiler.err.illegal.char",
         pattern=re.compile(r"illegal character: "),
         signature="illegal character: '#'",
     ),
+    # This one is too generic for my liking because "message segment" can be nearly
+    # anything including "missing return value", "unexpected return value"
+    MessagePattern(
+        message_id="compiler.err.prob.found.req",
+        pattern=re.compile(r"incompatible types: "),
+        signature="incompatible types: double cannot be converted to java.lang.Integer",
+    ),
+    MessagePattern(
+        message_id="compiler.err.cant.deref",
+        pattern=re.compile(r"(?P<type>\S+) cannot be dereferenced"),
+        signature="int cannot be dereferenced",
+    ),
+    # TODO: check how generic this one is
+    MessagePattern(
+        message_id="compiler.err.already.defined[method]",
+        pattern=re.compile(
+            r"method (?P<method_name>\S+)"
+            " is already defined in "
+            "(?P<kind2>\S+) (?P<type_name>\S+)"
+        ),
+        signature="method quack(java.io.OutputStream) is already defined in class Mallard",
+    ),
+    MessagePattern(
+        message_id="compiler.err.already.defined[variable]",
+        pattern=re.compile(
+            r"variable (?P<variable_name>\S+)"
+            " is already defined in "
+            "(?P<kind2>\S+) (?P<symbol>\S+)"
+        ),
+        signature="variable i is already defined in method quack(java.io.OutputStream)",
+    ),
+    MessagePattern(
+        message_id="compiler.err.anonymous.diamond.method.does.not.override.superclass",
+        pattern=re.compile(
+            r"method does not override or implement a method from a supertype"
+        ),
+        signature="method does not override or implement a method from a supertype",
+    ),
+    MessagePattern(
+        message_id="compiler.err.modifier.not.allowed.here",
+        pattern=re.compile(r"modifier (?P<name>\S+) not allowed here"),
+        signature="modifier abstract not allowed here",
+    ),
+    # TODO: overly generic:
+    MessagePattern(
+        message_id="compiler.err.cant.apply.symbols",
+        pattern=re.compile(r"no suitable (?P<symbol_kind>\S+) found for (?P<name>\S+)"),
+        signature="no suitable constructor found for FileOutputStream()",
+    ),
+    # TODO: overly generic with symbol kind?
+    MessagePattern(
+        message_id="compiler.err.non-static.cant.be.ref",
+        pattern=re.compile(
+            r"non-static (?P<symbol_kind>\S+) (?P<symbol>\S+) cannot be referenced from a static context"
+        ),
+        signature="non-static method quack() cannot be referenced from a static context",
+    ),
+    MessagePattern(
+        message_id="compiler.err.doesnt.exist",
+        pattern=re.compile("package (?P<symbol>\S+) does not exist"),
+        signature="package DUck does not exist",
+    ),
+    MessagePattern(
+        message_id="compiler.err.unreported.exception.need.to.catch.or.throw",
+        pattern=re.compile(
+            r"unreported exception (?P<type>\S+); must be caught or declared to be thrown"
+        ),
+        signature=(
+            "unreported exception java.io.FileNotFoundException; must be caught or declared to be thrown"
+        ),
+    ),
+    MessagePattern(
+        message_id="compiler.err.var.might.not.have.been.initialized",
+        pattern=re.compile(
+            r"variable (?P<symbol>\S+) might not have been initialized$"
+        ),
+        signature=("variable NUMBER_OF_QUACKS might not have been initialized"),
+    ),
+    MessagePattern(
+        message_id="compiler.err.var.might.already.be.assigned",
+        pattern=re.compile(
+            "variable (?P<symbol>\S+) might already have been assigned$"
+        ),
+        signature=("variable NUMBER_OF_QUACKS might already have been assigned"),
+    ),
 ]
 
 
 if __name__ == "__main__":
-    # quick and dirty check that my regular expressions are all matched,
+    # Quick and dirty checks that my regular expressions are all matched,
     # and that the signatures can be matched by the regular expression.
-    c: Counter[MessagePattern] = Counter()
+
+    unmatched_messages = 0
+    total_messages = 0
+    patterns_matched: Counter[MessagePattern] = Counter()
+    simple_errors_matched = 0
+
     with open("./grouped-errors.csv", encoding="UTF-8", newline="") as error_file:
         reader = csv.reader(error_file, delimiter=",", quotechar='"')
         for (message,) in reader:
             if pat := MessagePattern.match_all(message):
-                c[pat] += 1
+                patterns_matched[pat] += 1
+            elif message in SIMPLE_ERROR_MESSAGES:
+                simple_errors_matched += 1
+            else:
+                unmatched_messages += 1
+            total_messages += 1
 
+    # Check that all of the patterns matched at least once:
     for pat in PATTERNS:
-        assert pat.match(pat.signature), "pattern did not match own signature"
-        assert pat in c, "pattern never matched"
+        assert pat.match(pat.signature), f"{pat.message_id} did not match own signature"
+        assert pat in patterns_matched, f"pattern never matched"
 
-    for pat, count in c.most_common():
-        print(count, pat.signature)
+    print("== Summary ==")
+    for pat, count in patterns_matched.most_common():
+        print(f"\x1b[1m{count:3d}\x1b[m: \x1b[33m{pat.signature}\x1b[m")
+    print(f"\x1b[1m{unmatched_messages}\x1b[m/{total_messages} message unmatched")
+    print(f"({simple_errors_matched} simple errors)")
