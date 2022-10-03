@@ -235,6 +235,11 @@ PATTERNS = [
         signature="incompatible types: double cannot be converted to java.lang.Integer",
     ),
     MessagePattern(
+        message_id="compiler.err.incomparable.types",
+        pattern=re.compile(r"incomparable types: (?P<type_1>\S+) and (?P<type_2>\S+)"),
+        signature="incomparable types: char and java.lang.String",
+    ),
+    MessagePattern(
         message_id="compiler.err.cant.deref",
         pattern=re.compile(r"(?P<type>\S+) cannot be dereferenced"),
         signature="int cannot be dereferenced",
