@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "blackbox-mini-error-analysis"
+name = "project_antipatterns"
 version = "0.1.0"
-description = ""
+description = "Data collection and analysis for Project Anti-patterns"
 authors = ["Eddie Antonio Santos <eddie.santos@ucdconnect.ie>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "blackbox_mini_error_analysis"}]
+packages = [{include = "java_error_messages"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
