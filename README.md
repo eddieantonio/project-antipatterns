@@ -1,3 +1,5 @@
+See also: https://github.com/eddieantonio/javac-error-explorer
+
 # Requires
 
  - Python 3.8+
