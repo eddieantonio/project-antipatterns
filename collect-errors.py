@@ -36,7 +36,8 @@ def main():
 
     # I looked at htop on white and found this many processors:
     n_processors = 24
-    executor = ProcessPoolExecutor(max_workers=n_processors // 2)
+    # Neil was only using 1/4 of the cores, so :/
+    executor = ProcessPoolExecutor(max_workers=n_processors // 4)
     executor.map(process_entire_slice, slices)
 
 
@@ -163,5 +164,5 @@ def convert_to_int_if_not_none(x):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='data-collection.log', encoding='utf-8', level=logging.DEBUG))
+    logging.basicConfig(filename='data-collection.log', level=logging.DEBUG)
     main()

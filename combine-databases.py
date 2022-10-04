@@ -12,7 +12,7 @@ from database import SCHEMA
 dbs = list(Path(".").glob("errors-*.sqlite3"))
 assert len(dbs) > 0
 
-# Initit the combined db with the schema first:
+# Initialize the combined DB with the schema first:
 conn = sqlite3.connect("errors.sqlite3")
 with conn:
     conn.executescript(SCHEMA)
