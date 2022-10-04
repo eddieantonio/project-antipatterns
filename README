@@ -1,9 +1,0 @@
-2022-09-30
-
-I am trying to collect data for Project Antipatterns.
-
-Data:
-
- - Collect from Blackbox Mini (BlueJ3)
- - Collect all compiler errors raised
-	- Note: only first is shown in BlueJ3
