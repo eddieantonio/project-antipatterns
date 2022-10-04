@@ -5,16 +5,15 @@ Collect raw error messages from Blackbox Mini and insert them into several
 databases. Use combine-databases.py later to combine them all into one.
 """
 
-import sqlite3
 import logging
+import sqlite3
 import xml.etree.ElementTree as ET
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import blackbox_mini
-from decode_escapes import decode_escapes
 from database import SCHEMA
-
+from decode_escapes import decode_escapes
 
 DATASET_ROOT = Path("/data/mini/")
 
@@ -34,7 +33,7 @@ def main():
 
     slices = blackbox_mini.slices()
 
-    # I looked at htop on white and found this many processors:
+    # I looked at htop on white and found this many processors:
     n_processors = 24
     # Neil was only using 1/4 of the cores, so :/
     executor = ProcessPoolExecutor(max_workers=n_processors // 4)
@@ -45,13 +44,12 @@ def process_entire_slice(slice_root: Path):
     """
     Given a slice path, will commit all error messages found to a database.
     """
-    date = slice_root.name[len("srcml-"):]
+    date = slice_root.name[len("srcml-") :]
     assert len(date) > 0
 
     logger.debug("Starting slice %s (%s)", date, slice_root)
     collect_errors_from_slice(
-        slice_root=slice_root,
-        database_path=f"errors-{date}.sqlite3"
+        slice_root=slice_root, database_path=Path(f"errors-{date}.sqlite3")
     )
 
 
@@ -120,16 +118,16 @@ def find_compiler_errors_in_file(srcml_path: Path):
         return
 
     for unit in failed_compilations:
-        errors = unit.findall('./compile-error')
+        errors = unit.findall("./compile-error")
         for rank, error in enumerate(errors, start=1):
             yield (
-                    str(srcml_path),
-                    convert_to_int_if_not_none(unit.attrib.get('version')),
-                    rank,
-                    error.attrib.get('start'),
-                    error.attrib.get('end'),
-                    decode_escapes(error.text),
-                )
+                str(srcml_path),
+                convert_to_int_if_not_none(unit.attrib.get("version")),
+                rank,
+                error.attrib.get("start"),
+                error.attrib.get("end"),
+                decode_escapes(error.text),
+            )
 
 
 def init_db(conn):
@@ -150,7 +148,7 @@ def insert_batch(conn, messages):
             INSERT INTO messages (srcml_path, version, rank, start, end, text)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            messages
+            messages,
         )
 
 
@@ -163,6 +161,6 @@ def convert_to_int_if_not_none(x):
     return None
 
 
-if __name__ == '__main__':
-    logging.basicConfig(filename='data-collection.log', level=logging.DEBUG)
+if __name__ == "__main__":
+    logging.basicConfig(filename="data-collection.log", level=logging.DEBUG)
     main()
