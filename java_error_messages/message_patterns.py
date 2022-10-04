@@ -220,7 +220,7 @@ PATTERNS = [
     MessagePattern(
         message_id="compiler.err.class.cant.write",
         pattern=re.compile(r"error while writing (?P<symbol>\S+:)"),
-        signature="error while writing Duck: C:\Program Files (x86)\BlueJ\examples\duck\Duck.class (Access is denied)",
+        signature=r"error while writing Duck: C:\Program Files (x86)\BlueJ\examples\duck\Duck.class (Access is denied)",
     ),
     MessagePattern(
         message_id="compiler.err.illegal.char",
@@ -250,7 +250,7 @@ PATTERNS = [
         pattern=re.compile(
             r"method (?P<method_name>\S+)"
             " is already defined in "
-            "(?P<kind2>\S+) (?P<type_name>\S+)"
+            r"(?P<kind2>\S+) (?P<type_name>\S+)"
         ),
         signature="method quack(java.io.PrintStream) is already defined in class Mallard",
     ),
@@ -259,7 +259,7 @@ PATTERNS = [
         pattern=re.compile(
             r"variable (?P<variable_name>\S+)"
             " is already defined in "
-            "(?P<kind2>\S+) (?P<symbol>\S+)"
+            r"(?P<kind2>\S+) (?P<symbol>\S+)"
         ),
         signature="variable i is already defined in method quack(java.io.PrintStream)",
     ),
@@ -291,7 +291,7 @@ PATTERNS = [
     ),
     MessagePattern(
         message_id="compiler.err.doesnt.exist",
-        pattern=re.compile("package (?P<symbol>\S+) does not exist"),
+        pattern=re.compile(r"package (?P<symbol>\S+) does not exist"),
         signature="package DUck does not exist",
     ),
     MessagePattern(
@@ -313,7 +313,7 @@ PATTERNS = [
     MessagePattern(
         message_id="compiler.err.var.might.already.be.assigned",
         pattern=re.compile(
-            "variable (?P<symbol>\S+) might already have been assigned$"
+            r"variable (?P<symbol>\S+) might already have been assigned$"
         ),
         signature=("variable NUMBER_OF_QUACKS might already have been assigned"),
     ),
