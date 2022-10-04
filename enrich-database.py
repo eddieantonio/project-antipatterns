@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Enriches the error message database by adding functions:
     - sanitize_message(text)    -- get sanitized error message
@@ -44,7 +46,18 @@ def register_helpers(conn: sqlite3.Connection):
 
 
 if __name__ == "__main__":
-    conn = sqlite3.connect("sample-errors-all-slices.sqlite3")
+    import sys
+
+    try:
+        db_path = sys.argv[1]
+    except IndexError:
+        print(
+            "error: please provide a path to the database you wish to enrich",
+            file=sys.stderr,
+        )
+        sys.exit(65)
+
+    conn = sqlite3.connect(db_path)
     register_helpers(conn)
 
     with conn:

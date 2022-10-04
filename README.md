@@ -1,9 +1,9 @@
-# Project anti-patterns data collection scripts
+# Project anti-patterns data collection scripts
 
 Here are most of the scripts I used to collect (and maybe even analyze)
 data for project anti-patterns.
 
-# What's here?
+# What's here?
 
     .
     ├── blackbox_mini.py          -- library for working with Blackbox Mini
@@ -21,7 +21,9 @@ If the documentation is lacking or inaccurate, feel free to
 
 # How to collect data
 
-    python3 collect-errors.py && python3 combine-databases.py && python3 enrich-database.py
+    python3 collect-errors.py &&\
+        python3 combine-databases.py &&\
+        python3 enrich-database.py errors.sqlite3
 
 Better documentation coming soon!
 
