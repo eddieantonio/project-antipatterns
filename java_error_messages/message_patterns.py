@@ -94,18 +94,16 @@ class MessagePattern:
 #
 #     // ducks/Duck.java
 #     package ducks;
-#     import java.io.PrintStream;
 #     public abstract class Duck {
-#       public abstract void quack(PrintStream out);
+#       public abstract void quack();
 #     }
 #
 #     // ducks/Mallard.java
 #     package ducks;
-#     import java.io.PrintStream;
 #     public class Mallard extends Duck {
 #       private final int NUMBER_OF_QUACKS = 3;
 #       @Override
-#       public void quack(PrintStream out) {
+#       public void quack() {
 #          // ...
 #       }
 #     }
@@ -125,7 +123,7 @@ PATTERNS = [
             r" is not abstract and does not override abstract method "
             r"(?P<method_name>\S+) in (?P<parent_class_name>\S+)$"
         ),
-        signature="Mallard is not abstract and does not override abstract method quack(java.io.PrintStream) in Duck",
+        signature="Mallard is not abstract and does not override abstract method quack() in Duck",
     ),
     MessagePattern(
         message_id="compiler.err.array.req.but.found",
@@ -175,7 +173,7 @@ PATTERNS = [
     MessagePattern(
         message_id="compiler.err.cant.resolve[method]",
         pattern=re.compile(r"cannot find symbol -\s+method (?P<method_signature>\S+)"),
-        signature="cannot find symbol -   method quackk(java.io.PrintStream)",
+        signature="cannot find symbol -   method quackk()",
     ),
     MessagePattern(
         message_id="compiler.err.cant.resolve[variable]",
@@ -252,7 +250,7 @@ PATTERNS = [
             " is already defined in "
             r"(?P<kind2>\S+) (?P<type_name>\S+)"
         ),
-        signature="method quack(java.io.PrintStream) is already defined in class Mallard",
+        signature="method quack() is already defined in class Mallard",
     ),
     MessagePattern(
         message_id="compiler.err.already.defined[variable]",
@@ -261,7 +259,7 @@ PATTERNS = [
             " is already defined in "
             r"(?P<kind2>\S+) (?P<symbol>\S+)"
         ),
-        signature="variable i is already defined in method quack(java.io.PrintStream)",
+        signature="variable i is already defined in method quack()",
     ),
     MessagePattern(
         message_id="compiler.err.anonymous.diamond.method.does.not.override.superclass",
@@ -287,7 +285,7 @@ PATTERNS = [
         pattern=re.compile(
             r"non-static (?P<symbol_kind>\S+) (?P<symbol>\S+) cannot be referenced from a static context"
         ),
-        signature="non-static method quack(java.io.PrintStream) cannot be referenced from a static context",
+        signature="non-static method quack() cannot be referenced from a static context",
     ),
     MessagePattern(
         message_id="compiler.err.doesnt.exist",
