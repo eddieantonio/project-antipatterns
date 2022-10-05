@@ -231,7 +231,7 @@ PATTERNS = [
     # anything including "missing return value", "unexpected return value"
     MessagePattern(
         message_id="compiler.err.prob.found.req",
-        pattern=re.compile(r"incompatible types: "),
+        pattern=re.compile(r"incompatible types\b"),
         signature="incompatible types: double cannot be converted to java.lang.Integer",
     ),
     MessagePattern(
