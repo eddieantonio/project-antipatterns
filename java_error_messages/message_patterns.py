@@ -317,6 +317,12 @@ PATTERNS = [
         ),
         signature=("variable NUMBER_OF_QUACKS might already have been assigned"),
     ),
+    # https://github.com/openjdk/jdk/blob/77c86a964655e3586a404d3e0803bd8cd6dbbc01/langtools/src/share/classes/com/sun/tools/javac/resources/compiler.properties#L923
+    MessagePattern(
+        message_id="compiler.err.type.found.req",
+        pattern=re.compile(r"unexpected type\b"),
+        signature=("unexpected type\n" "  required: variable\n" "  found:    value"),
+    ),
 ]
 
 

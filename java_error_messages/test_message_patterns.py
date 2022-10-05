@@ -32,3 +32,24 @@ def test_regression_incompatible_types():
     # Don't match this:
     m = MessagePattern.match_all("incompatible typesies")
     assert m is None
+
+
+def test_regression_unexpected_type():
+    """
+    At some point, the initial spacing changed with this one.
+    """
+    m1 = MessagePattern.match_all(
+        """unexpected type
+  required: variable
+  found:    value"""
+    )
+    assert m1 is not None
+
+    m2 = MessagePattern.match_all(
+        """unexpected type
+required: variable
+found   : value"""
+    )
+    assert m2 is not None
+
+    assert m1.message_id == "compiler.err.type.found.req"
