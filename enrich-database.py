@@ -27,61 +27,8 @@ Top first error messages can be retrieved as thus:
 
 import argparse
 import sqlite3
-from functools import lru_cache
 
-from java_error_messages import match_message
-
-# Cache match_message() to avoid too many re lookups.
-match_message = lru_cache(1024)(match_message)
-
-
-def enrich_database(conn: sqlite3.Connection):
-    register_helpers(conn)
-    create_santizied_messages_table(conn)
-    create_views(conn)
-
-
-def register_helpers(conn: sqlite3.Connection):
-    def sanitize_message(text) -> str:
-        return match_message(text).sanitized_message
-
-    def javac_name(text) -> str | None:
-        return match_message(text).javac_name
-
-    conn.create_function("sanitize_message", 1, sanitize_message)
-    conn.create_function("javac_name", 1, javac_name)
-
-
-def create_santizied_messages_table(conn, drop_existing=False):
-    with conn:
-        if drop_existing:
-            conn.execute(
-                """
-                DROP TABLE sanitized_messages
-                """
-            )
-        conn.execute(
-            """
-            CREATE TABLE sanitized_messages
-            AS SELECT text,
-                      javac_name(text) as javac_name,
-                      sanitize_message(text) as sanitized_text
-                 FROM (SELECT DISTINCT text from messages)
-            """
-        )
-        # TODO: primary key text?
-        conn.execute(
-            """
-            CREATE UNIQUE INDEX text_idx ON sanitized_messages(text);
-            """
-        )
-
-        # TODO: first messages vs. all messages?
-
-
-def create_views(conn: sqlite3.Connection):
-    ...
-
+from error_database import Database
 
 if __name__ == "__main__":
     import sys
@@ -96,4 +43,6 @@ if __name__ == "__main__":
         sys.exit(65)
 
     conn = sqlite3.connect(db_path)
-    enrich_database(conn)
+    db = Database(conn)
+    db.populate_sanitized_messages()
+    conn.close()

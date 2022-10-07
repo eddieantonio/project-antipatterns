@@ -31,12 +31,13 @@ CREATE TABLE source(
 CREATE TABLE sanitized_messages(
     text            TEXT PRIMARY KEY,
     javac_name      TEXT NOT NULL,
-    sanitized_text  TEXT NOT NULL,
+    sanitized_text  TEXT NOT NULL
 );
 
 CREATE VIEW first_messages(srcml_path, version, start, end, text)
 AS SELECT srcml_path, version, start, end, text
-     FROM all_messages;
+     FROM all_messages
+    WHERE rank = 1;
 """
 
 
@@ -52,7 +53,7 @@ class Database:
         self.conn = conn
         self._register_helpers()
 
-    def ensure_initialized(self) -> None:
+    def apply_schema(self) -> None:
         """
         Make sure all tables and views are created.
         """
@@ -83,10 +84,10 @@ class Database:
             self.conn.execute(
                 """
                 INSERT INTO sanitized_messages (text, javac_name, sanitized_text)
-                AS SELECT text,
-                          javac_name(text) as javac_name,
-                          sanitize_message(text) as sanitized_text
-                     FROM (SELECT DISTINCT text from all_messages)
+                SELECT text,
+                       javac_name(text) as javac_name,
+                       sanitize_message(text) as sanitized_text
+                  FROM (SELECT DISTINCT text from all_messages)
                 """
             )
 
@@ -97,21 +98,21 @@ class Database:
         with self.conn:
             self.conn.execute(
                 """
-                INSERT INTO source(srcml_path, slice, project_id, source_id)
-                AS SELECT srcml_path,
+                INSERT INTO source(srcml_path, slice, project_id, source_file_id)
+                SELECT srcml_path,
                           slice_name(srcml_path) as slice,
                           project_id(srcml_path) as project_id,
-                          source_id(srcml_path) as source_id
-                     FROM all_messages
+                          source_id(srcml_path) as source_file_id
+                 FROM (SELECT DISTINCT srcml_path FROM all_messages)
                 """
             )
 
-    def _register_helpers(self):
-        conn.create_function("sanitize_message", 1, sanitize_message)
-        conn.create_function("javac_name", 1, javac_name)
-        conn.create_function("slice_name", 1, slice_name)
-        conn.create_function("project_id", 1, project_id)
-        conn.create_function("source_id", 1, source_id)
+    def _register_helpers(self) -> None:
+        self.conn.create_function("sanitize_message", 1, sanitize_message)
+        self.conn.create_function("javac_name", 1, javac_name)
+        self.conn.create_function("slice_name", 1, slice_name)
+        self.conn.create_function("project_id", 1, project_id)
+        self.conn.create_function("source_id", 1, source_id)
 
 
 # Cache match_message() to avoid too many re lookups.

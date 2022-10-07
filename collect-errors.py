@@ -14,7 +14,7 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import blackbox_mini
-from error_database import SCHEMA
+from error_database import Database
 
 DATASET_ROOT = Path("/data/mini/")
 
@@ -48,10 +48,11 @@ def process_entire_slice(slice_root: Path):
     date = slice_root.name[len("srcml-") :]
     assert len(date) > 0
 
-    logger.debug("Starting slice %s (%s)", date, slice_root)
+    logger.info("Starting slice %s (%s)", date, slice_root)
     collect_errors_from_slice(
         slice_root=slice_root, database_path=Path(f"errors-{date}.sqlite3")
     )
+    logger.info("Finished slice %s (%s)", date, slice_root)
 
 
 def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
@@ -65,10 +66,13 @@ def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
     assert slice_root.match("srcml-*")
 
     conn = sqlite3.connect(database_path)
+    db = Database(conn)
+
     try:
-        init_db(conn)
+        db.apply_schema()
         for project in generate_all_project_paths(slice_root):
-            insert_batch(conn, generate_compiler_errors_for_project(project))
+            db.insert_batch(generate_compiler_errors_for_project(project))
+        db.populate_sources()
     finally:
         conn.close()
 
@@ -129,28 +133,6 @@ def find_compiler_errors_in_file(srcml_path: Path):
                 error.attrib.get("end"),
                 decode_escapes(error.text),
             )
-
-
-def init_db(conn):
-    """
-    Initialize the database with the schema.
-    """
-    with conn:
-        conn.executescript(SCHEMA)
-
-
-def insert_batch(conn, messages):
-    """
-    Insert one batch of messages into the database.
-    """
-    with conn:
-        conn.executemany(
-            """
-            INSERT INTO messages (srcml_path, version, rank, start, end, text)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            messages,
-        )
 
 
 # (sigh)
