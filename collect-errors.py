@@ -43,28 +43,18 @@ def main():
 
 def process_entire_slice(slice_root: Path):
     """
-    Given a slice path, will commit all error messages found to a database.
+    Collect all the error messages from one slice of Blackbox Mini, and stuff
+    them into a database name with a derived name.
+
+    Messages are committed in batches. Each batch is one project from within
+    the slice.
     """
     date = slice_root.name[len("srcml-") :]
     assert len(date) > 0
 
     logger.info("Starting slice %s (%s)", date, slice_root)
-    collect_errors_from_slice(
-        slice_root=slice_root, database_path=Path(f"errors-{date}.sqlite3")
-    )
-    logger.info("Finished slice %s (%s)", date, slice_root)
 
-
-def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
-    """
-    Collect all the error messages from one slice of Blackbox Mini, and stuff
-    them into the given database name.
-
-    Messages are committed in batches. Each batch is one project from within
-    the slice.
-    """
-    assert slice_root.match("srcml-*")
-
+    database_path = Path(f"errors-{date}.sqlite3")
     conn = sqlite3.connect(database_path)
     db = Database(conn)
 
@@ -75,6 +65,8 @@ def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
         db.populate_sources()
     finally:
         conn.close()
+
+    logger.info("Finished slice %s (%s)", date, slice_root)
 
 
 def generate_compiler_errors_for_project(project_path: Path):
