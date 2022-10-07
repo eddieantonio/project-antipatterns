@@ -70,39 +70,20 @@ def collect_errors_from_slice(*, database_path: Path, slice_root: Path):
 
     try:
         db.apply_schema()
-        for project in generate_all_project_paths(slice_root):
+        for project in blackbox_mini.projects(slice_root):
             db.insert_batch(generate_compiler_errors_for_project(project))
         db.populate_sources()
     finally:
         conn.close()
 
 
-def generate_all_compiler_errors():
-    """
-    Yields every compiler error found within srcML files within in DATASET_ROOT
-    (including subdirectories).
-    """
-    slices = DATASET_ROOT.glob("srcml-*")
-    for slice_root in slices:
-        for project in generate_all_project_paths(slice_root):
-            yield from generate_compiler_errors_for_project(project)
-
-
 def generate_compiler_errors_for_project(project_path: Path):
+    """
+    Yields every compiler error in the given project.
+    """
     assert project_path.match("project-*")
     for srcml_path in project_path.glob("src-*.xml"):
         yield from find_compiler_errors_in_file(srcml_path)
-
-
-def generate_all_project_paths(slice_root: Path):
-    """
-    Given a path to the root of a slice, yields every project directory
-    """
-    assert slice_root.match("srcml-*")
-    for entry in slice_root.glob("project-*"):
-        if not entry.is_dir():
-            continue
-        yield entry
 
 
 def find_compiler_errors_in_file(srcml_path: Path):
