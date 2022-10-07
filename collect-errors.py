@@ -5,15 +5,16 @@ Collect raw error messages from Blackbox Mini and insert them into several
 databases. Use combine-databases.py later to combine them all into one.
 """
 
+import codecs
 import logging
+import re
 import sqlite3
 import xml.etree.ElementTree as ET
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import blackbox_mini
-from database import SCHEMA
-from decode_escapes import decode_escapes
+from error_database import SCHEMA
 
 DATASET_ROOT = Path("/data/mini/")
 
@@ -150,6 +151,32 @@ def insert_batch(conn, messages):
             """,
             messages,
         )
+
+
+# (sigh)
+# Adapted from: https://stackoverflow.com/a/24519338
+ESCAPE_SEQUENCE_RE = re.compile(
+    r"""
+    ( \\u....          # 4-digit hex escapes
+    | \\x..            # 2-digit hex escapes
+    | \\[0-7]{1,3}     # Octal escapes
+    | \\[\\'"abfnrtv]  # Single-character escapes
+    )""",
+    re.UNICODE | re.VERBOSE,
+)
+
+
+def decode_escapes(s):
+    """
+    Decoding escapes in Python, the right way.
+
+    Only uses unicode-escape on actual escapes.
+    """
+
+    def decode_match(match):
+        return codecs.decode(match.group(0), "unicode-escape")
+
+    return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
 
 
 def convert_to_int_if_not_none(x):
