@@ -12,20 +12,18 @@ And a derived table:
 Top errors can be can be retrieved as thus:
 
     SELECT sanitized_text, COUNT(sanitized_text)
-      FROM messages JOIN sanitized_messages USING (text)
+      FROM all_messages JOIN sanitized_messages USING (text)
      GROUP BY sanitized_text
      ORDER BY COUNT(sanitized_text) DESC;
 
 Top first error messages can be retrieved as thus:
 
     SELECT sanitized_text, COUNT(sanitized_text)
-      FROM messages JOIN sanitized_messages USING (text)
-     WHERE rank = 1
+      FROM first_messages JOIN sanitized_messages USING (text)
      GROUP BY sanitized_text
      ORDER BY COUNT(sanitized_text) DESC;
 """
 
-import argparse
 import sqlite3
 
 from error_database import Database
@@ -36,11 +34,7 @@ if __name__ == "__main__":
     try:
         db_path = sys.argv[1]
     except IndexError:
-        print(
-            "error: please provide a path to the database you wish to enrich",
-            file=sys.stderr,
-        )
-        sys.exit(65)
+        db_path = "errors.sqlite3"
 
     conn = sqlite3.connect(db_path)
     db = Database(conn)
