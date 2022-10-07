@@ -4,7 +4,7 @@ Shared utilties for the database.
 
 import sqlite3
 from functools import lru_cache
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Iterator
 
 from java_error_messages import match_message
@@ -30,7 +30,7 @@ CREATE TABLE source(
 
 CREATE TABLE sanitized_messages(
     text            TEXT PRIMARY KEY,
-    javac_name      TEXT NOT NULL,
+    javac_name      TEXT,
     sanitized_text  TEXT NOT NULL
 );
 
@@ -59,6 +59,26 @@ class Database:
         """
         with self.conn:
             self.conn.executescript(SCHEMA)
+
+    def combine_with(self, db_path: Path):
+        """
+        Get all message and source data from the given database. It is assumed that the
+        given database contains one or more entire slices, and those slices are not
+        already in the existing database.
+        """
+        # Based on https://stackoverflow.com/a/11089277
+        self.conn.executescript(
+            f"""
+            ATTACH '{db_path}' as slice;
+            BEGIN;
+            INSERT INTO all_messages
+                SELECT * FROM slice.all_messages;
+            INSERT INTO source
+                SELECT * FROM slice.source;
+            COMMIT;
+            DETACH slice;
+            """
+        )
 
     def insert_batch(self, messages: Iterator[Message]):
         """
