@@ -49,7 +49,7 @@ def all_possible_slices():
     for year in range(2015, 2022):
         for month_zero in range(12):
             month = month_zero + 1
-            yield f"{year}-{month}"
+            yield f"{year}-{month:02d}"
 
 
 if __name__ == "__main__":
