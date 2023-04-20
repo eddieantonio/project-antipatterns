@@ -56,16 +56,6 @@ class MessagePattern:
     # signatures should follow a common theme.
     signature: str
 
-    @property
-    def javac_name(self) -> str:
-        """
-        Same as 'message_id', but lacks any kind of [parameterization].
-        """
-        name = self.message_id
-        if "[" not in name:
-            return name
-        return name[: self.message_id.index("[")]
-
     def match(self, message: str) -> bool:
         """
         Returns true if the given error message matches this pattern.

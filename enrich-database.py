@@ -36,13 +36,20 @@ match_message = lru_cache(1024)(match_message)
 
 def register_helpers(conn: sqlite3.Connection):
     def sanitize_message(text) -> str:
+        "Return my santized version of the error message"
         return match_message(text).sanitized_message
 
     def javac_name(text) -> str | None:
+        "Returns javac's internal name for the message -- note: many message categories overlap"
         return match_message(text).javac_name
+
+    def parameterized_javac_name(text) -> str | None:
+        "Returns javac's internal name for the message, with disambiguation"
+        return match_message(text).message_id
 
     conn.create_function("sanitize_message", 1, sanitize_message)
     conn.create_function("javac_name", 1, javac_name)
+    conn.create_function("parameterized_javac_name", 1, parameterized_javac_name)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ def test_matches_cannot_find_symbol():
     result = match_message(message)
     assert result.kind == "match_pattern"
     assert result.javac_name == "compiler.err.cant.resolve"
+    assert result.parameterized_name == "compiler.err.cant.resolve[class]"
     assert result.sanitized_message != message
 
 
