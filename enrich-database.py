@@ -45,7 +45,7 @@ def register_helpers(conn: sqlite3.Connection):
 
     def parameterized_javac_name(text) -> str | None:
         "Returns javac's internal name for the message, with disambiguation"
-        return match_message(text).message_id
+        return match_message(text).parameterized_name
 
     conn.create_function("sanitize_message", 1, sanitize_message)
     conn.create_function("javac_name", 1, javac_name)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             """
             CREATE TABLE IF NOT EXISTS sanitized_messages
             AS SELECT text,
-                      javac_name(text) as javac_name,
+                      parameterized_javac_name(text) as javac_name,
                       sanitize_message(text) as sanitized_text
                  FROM (SELECT DISTINCT text from messages)
             """
